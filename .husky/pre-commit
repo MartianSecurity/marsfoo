@@ -30,10 +30,11 @@ while IFS= read -r -d '' STAGED_FILE; do
     continue
   fi
   case "$STAGED_FILE" in
-    *.d.ts) ;; # Biome ignores declaration files.
-    *.js|*.ts|*.tsx) STAGED_JS_TS_FILES+=("$STAGED_FILE") ;;
-    *.css|*.scss|*.html|*.md|*.mdc|*.mdx|*.yaml|*.yml)
-      STAGED_PRETTIER_FILES+=("$STAGED_FILE") ;;
+  *.d.ts) ;; # Biome ignores declaration files.
+  *.js | *.ts | *.tsx) STAGED_JS_TS_FILES+=("$STAGED_FILE") ;;
+  *.css | *.scss | *.html | *.md | *.mdc | *.mdx | *.yaml | *.yml)
+    STAGED_PRETTIER_FILES+=("$STAGED_FILE")
+    ;;
   esac
 done < <(git diff --cached --name-only --diff-filter=ACMRTUXB -z)
 
