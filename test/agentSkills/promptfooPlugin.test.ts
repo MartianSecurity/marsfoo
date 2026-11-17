@@ -2120,9 +2120,9 @@ describe('promptfoo plugin package (Codex + Claude Code)', () => {
   it('keeps the promptfoo-evals contributor copy self-contained', () => {
     // The repo-local copy is standalone: the sibling skills it could route to
     // (promptfoo-provider-setup, the redteam skills) are not present under
-    // .claude/skills/, so it must not hand off to them and dangle.
+    // the canonical contributor tree, so it must not hand off to them and dangle.
     const contributorEvals = readText(
-      path.join(repoClaudeSkillsRoot, 'promptfoo-evals', 'SKILL.md'),
+      path.join(repoCodexSkillsRoot, 'promptfoo-evals', 'SKILL.md'),
     );
     for (const sibling of [
       'promptfoo-provider-setup',
@@ -2133,13 +2133,36 @@ describe('promptfoo plugin package (Codex + Claude Code)', () => {
     }
   });
 
-  it('keeps shared repo-local contributor skills aligned between Claude and Codex', () => {
-    for (const skillDir of ['redteam-plugin-development', 'search-params']) {
-      const claudeSkill = readText(path.join(repoClaudeSkillsRoot, skillDir, 'SKILL.md'));
-      const codexSkill = readText(path.join(repoCodexSkillsRoot, skillDir, 'SKILL.md'));
+  it('loads Claude contributor skills through the canonical agents directory', () => {
+    expect(fs.lstatSync(repoCodexSkillsRoot).isDirectory()).toBe(true);
+    expect(fs.lstatSync(repoCodexSkillsRoot).isSymbolicLink()).toBe(false);
+    expect(fs.lstatSync(repoClaudeSkillsRoot).isSymbolicLink()).toBe(true);
+    expect(fs.readlinkSync(repoClaudeSkillsRoot)).toBe('../.agents/skills');
+    expect(fs.realpathSync(repoClaudeSkillsRoot)).toBe(fs.realpathSync(repoCodexSkillsRoot));
+    const canonicalSkills = fs
+      .readdirSync(repoCodexSkillsRoot, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name)
+      .sort();
+    expect(canonicalSkills).toEqual([
+      'promptfoo-evals',
+      'redteam-plugin-development',
+      'search-params',
+    ]);
+    expect(
+      fs.existsSync(
+        path.join(repoCodexSkillsRoot, 'promptfoo-evals', 'references', 'cheatsheet.md'),
+      ),
+    ).toBe(true);
+  });
 
-      expect(codexSkill).toBe(claudeSkill);
-    }
+  it('loads Claude contributor instructions from canonical AGENTS.md', () => {
+    const canonical = path.join(repoRoot, 'AGENTS.md');
+    const alias = path.join(repoRoot, 'CLAUDE.md');
+    expect(fs.lstatSync(canonical).isSymbolicLink()).toBe(false);
+    expect(fs.lstatSync(alias).isSymbolicLink()).toBe(true);
+    expect(fs.readlinkSync(alias)).toBe('AGENTS.md');
+    expect(fs.realpathSync(alias)).toBe(fs.realpathSync(canonical));
   });
 
   it('keeps every agents/openai.yaml aligned with UI metadata constraints', () => {

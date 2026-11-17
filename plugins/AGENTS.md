@@ -62,12 +62,14 @@ inside skill folders.
 
 From the repo root:
 
+Use the installed skill-creator validator when available, resolving its actual path without changing `CODEX_HOME`. If it is unavailable, check metadata/references directly and report that limitation. These commands are for changed bundle content; instruction-only edits need scoped Markdown checks and `git diff --check`.
+
 ```bash
-CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
-python3 "$CODEX_HOME/skills/.system/skill-creator/scripts/quick_validate.py" plugins/promptfoo/skills/promptfoo-evals
-python3 "$CODEX_HOME/skills/.system/skill-creator/scripts/quick_validate.py" plugins/promptfoo/skills/promptfoo-provider-setup
-python3 "$CODEX_HOME/skills/.system/skill-creator/scripts/quick_validate.py" plugins/promptfoo/skills/promptfoo-redteam-setup
-python3 "$CODEX_HOME/skills/.system/skill-creator/scripts/quick_validate.py" plugins/promptfoo/skills/promptfoo-redteam-run
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-creator/scripts/quick_validate.py" plugins/promptfoo/skills/promptfoo-evals
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-creator/scripts/quick_validate.py" plugins/promptfoo/skills/promptfoo-provider-setup
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-creator/scripts/quick_validate.py" plugins/promptfoo/skills/promptfoo-redteam-setup
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-creator/scripts/quick_validate.py" plugins/promptfoo/skills/promptfoo-redteam-run
 npx vitest test/agentSkills/promptfooPlugin.test.ts --run
-npm run f
 ```
+
+Use read-only formatting checks scoped to the changed files. `npm run f` rewrites the full diff against `origin/main`; do not run it over unrelated work.

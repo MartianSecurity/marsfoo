@@ -1,7 +1,9 @@
-# Codex Project Metadata
+# Repository Agent Metadata
 
-This directory holds repo-local Codex metadata: plugin marketplace entries plus
-project skills that should be available while working in this repository.
+This directory holds canonical repository contributor skills plus Codex plugin
+marketplace metadata. `.claude/skills` is a relative symlink to this directory's
+`skills/`; both hosts read one source tree. Claude settings/hooks remain in
+`.claude/`.
 
 ## Rules
 
@@ -11,8 +13,10 @@ project skills that should be available while working in this repository.
 - Keep marketplace root metadata limited to `name`, optional `interface.displayName`, and `plugins`.
 - Do not add product gating unless explicitly requested.
 - Keep repo-local project skills under `.agents/skills/<name>/SKILL.md`.
-- When a repo-local Codex skill mirrors a `.claude/skills/` skill, keep the files
-  byte-for-byte aligned unless the platform needs an intentional divergence.
+- Keep `.agents/skills` as a real directory and `.claude/skills` as the relative
+  `../.agents/skills` symlink. Edit canonical skills and references only; do not
+  restore separate platform copies. The three contributor skills remain separate
+  from the four-skill published plugin bundle.
 
 ## Validation
 
@@ -20,15 +24,14 @@ When changing marketplace metadata, run:
 
 ```bash
 npx vitest test/agentSkills/promptfooPlugin.test.ts --run
-npm run f
+npx prettier --check .agents/AGENTS.md .agents/plugins/marketplace.json
 ```
 
-When changing repo-local Codex skills, also run:
+When changing repo-local Codex skills, also run the bundled skill validator when available, plus the existing contract test. Resolve the installed validator path rather than changing `CODEX_HOME`; if it is absent, check metadata/references directly and report that limitation:
 
 ```bash
-CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
 for skill in .agents/skills/*; do
-  python3 "$CODEX_HOME/skills/.system/skill-creator/scripts/quick_validate.py" "$skill"
+  python3 "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-creator/scripts/quick_validate.py" "$skill"
 done
 npx vitest test/agentSkills/promptfooPlugin.test.ts --run
 ```

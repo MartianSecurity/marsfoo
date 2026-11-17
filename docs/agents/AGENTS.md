@@ -22,6 +22,8 @@ Guidance for AI agents editing the reusable docs in `docs/agents/`.
 For docs-only edits here, run:
 
 ```bash
-npm run f
+npx prettier --check <changed-markdown-paths>
 git diff --check
 ```
+
+`npm run f` rewrites every matching file changed from `origin/main`; inspect that set before using write-mode formatting and preserve unrelated work.

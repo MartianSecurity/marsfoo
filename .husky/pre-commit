@@ -21,24 +21,29 @@ fi
 
 echo "Running pre-commit lint checks..."
 
-# Get list of staged JS/TS files. Biome ignores declaration files, so exclude them
-# here instead of failing d.ts-only commits with "No files were processed".
-STAGED_JS_TS_FILES=$(
-  git diff --cached --name-only --diff-filter=ACMRTUXB |
-    grep -E '\.(js|ts|tsx)$' |
-    grep -Ev '\.d\.ts$' || true
-)
-
-# Get list of staged CSS/HTML/MD/YAML files for Prettier
-STAGED_PRETTIER_FILES=$(git diff --cached --name-only --diff-filter=ACMRTUXB | grep -E '\.(css|scss|html|md|mdc|mdx|yaml|yml)$' || true)
+# Format canonical files, not instruction/skill symlink aliases. Preserve path
+# boundaries so spaces in staged filenames do not become separate arguments.
+STAGED_JS_TS_FILES=()
+STAGED_PRETTIER_FILES=()
+while IFS= read -r -d '' STAGED_FILE; do
+  if [ ! -f "$STAGED_FILE" ] || [ -L "$STAGED_FILE" ]; then
+    continue
+  fi
+  case "$STAGED_FILE" in
+    *.d.ts) ;; # Biome ignores declaration files.
+    *.js|*.ts|*.tsx) STAGED_JS_TS_FILES+=("$STAGED_FILE") ;;
+    *.css|*.scss|*.html|*.md|*.mdc|*.mdx|*.yaml|*.yml)
+      STAGED_PRETTIER_FILES+=("$STAGED_FILE") ;;
+  esac
+done < <(git diff --cached --name-only --diff-filter=ACMRTUXB -z)
 
 # Track if we have any errors
 HAS_ERRORS=0
 
 # Run Biome lint on staged JS/TS files
-if [ -n "$STAGED_JS_TS_FILES" ]; then
+if [ ${#STAGED_JS_TS_FILES[@]} -gt 0 ]; then
   echo "Linting JS/TS files with Biome..."
-  echo "$STAGED_JS_TS_FILES" | xargs npx @biomejs/biome check --write
+  npx @biomejs/biome check --write "${STAGED_JS_TS_FILES[@]}"
   BIOME_EXIT=$?
 
   if [ $BIOME_EXIT -ne 0 ]; then
@@ -46,14 +51,14 @@ if [ -n "$STAGED_JS_TS_FILES" ]; then
     HAS_ERRORS=1
   else
     # Re-add files that were auto-fixed
-    echo "$STAGED_JS_TS_FILES" | xargs git add
+    git add -- "${STAGED_JS_TS_FILES[@]}"
   fi
 fi
 
 # Run Prettier on staged CSS/HTML/MD/YAML files
-if [ -n "$STAGED_PRETTIER_FILES" ]; then
+if [ ${#STAGED_PRETTIER_FILES[@]} -gt 0 ]; then
   echo "Formatting with Prettier..."
-  echo "$STAGED_PRETTIER_FILES" | xargs npx prettier --write
+  npx prettier --write "${STAGED_PRETTIER_FILES[@]}"
   PRETTIER_EXIT=$?
 
   if [ $PRETTIER_EXIT -ne 0 ]; then
@@ -61,7 +66,7 @@ if [ -n "$STAGED_PRETTIER_FILES" ]; then
     HAS_ERRORS=1
   else
     # Re-add files that were auto-fixed
-    echo "$STAGED_PRETTIER_FILES" | xargs git add
+    git add -- "${STAGED_PRETTIER_FILES[@]}"
   fi
 fi
 

@@ -12,14 +12,16 @@ Promptfoo plugin bundle (shared across Codex and Claude Code).
   `.agents/plugins/marketplace.json` (Codex) and the repo-root
   `.claude-plugin/marketplace.json` (Claude Code) with matching plugin name
   `promptfoo`.
-- The repo-local `.claude/skills/promptfoo-evals` is a self-contained
+- The repo-local `.agents/skills/promptfoo-evals` is a self-contained
   contributor copy (no cross-skill routing) and is intentionally independent of
   the published bundle's eval skill, since the sibling skills are not present in
-  `.claude/skills/`.
-- Every repo-local Claude skill uses canonical `SKILL.md` casing so discovery
-  stays predictable.
-- Shared repo-local contributor skills stay aligned between `.claude/skills/`
-  and `.agents/skills/`.
+  the contributor tree.
+- Every repo-local skill uses canonical `SKILL.md` casing so discovery stays
+  predictable. All three contributor skills live in the real `.agents/skills/`
+  directory; `.claude/skills` is its relative symlink, not a second copy.
+- `AGENTS.md` is the contributor instruction source and `CLAUDE.md` is its
+  relative symlink. Protect actual link targets and required skill references,
+  not copy-equality assertions that become tautological through an alias.
 - Skill bodies stay concise; detailed examples live in `references/`.
 - `agents/openai.yaml` files keep short descriptions, default prompts, and
   implicit invocation aligned with each skill.

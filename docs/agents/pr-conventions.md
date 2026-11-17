@@ -210,10 +210,12 @@ Use `--draft` only when:
 
 ## Checklist Before Creating PR
 
+Prepare and validate the change before publishing. Commit, push and PR creation require the user's authorization; reuse the existing task branch/PR for follow-ups. See [Git workflow](git-workflow.md) for safe worktree setup and scoped checks.
+
 1. Is this PR primarily redteam-related? → Use `(redteam)` scope
 2. Choose correct type
 3. Choose correct scope using priority order
 4. Breaking change? Add `!` after scope
-5. Run `npm run l && npm run f`
+5. Run relevant lint/format checks on task files. Inspect the full selected diff before using the write-mode `npm run l` or `npm run f` scripts; preserve unrelated work.
 6. Open ready-for-review (omit `--draft`) unless one of the exceptions above applies
 7. Do **not** add Claude attribution trailers or footers

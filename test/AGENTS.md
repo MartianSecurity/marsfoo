@@ -23,7 +23,7 @@ npm run test:integration
 
 ## Critical Rules
 
-- **NEVER** increase test timeouts - fix the slow test
+- Do not raise timeouts merely to turn a failing test green. Remove fixed sleeps, isolate shared resources and wait for observable events. Change a bound only when measured legitimate runtime warrants it and the test still detects the original failure.
 - **NEVER** use `.only()` or `.skip()` in committed code
 - **ALWAYS** clean up mocks in `afterEach`
 - Test the dependency behavior Promptfoo uses, not package versions, minimums, or manifest/lockfile
